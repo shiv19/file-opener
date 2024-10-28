@@ -34,6 +34,20 @@ public class FileOpenerPlugin extends Plugin {
             fileName = filePath;
         }
 
+        File file = new File(fileName);
+        try {
+            if (!file.exists()) {
+                call.reject("File not found", "9");
+                return;
+            }
+        } catch (SecurityException exception) {
+            call.reject(exception.getLocalizedMessage(), "3", exception);
+            return;
+        } catch (Exception exception) {
+            call.reject(exception.getLocalizedMessage(), "1", exception);
+            return;
+        }
+
         if (filePath.startsWith("content://")) {
             ContentResolver contentResolver = getActivity().getContentResolver();
             try (Cursor cursor = contentResolver.query(fileUri, null, null, null, null)) {
@@ -60,31 +74,26 @@ public class FileOpenerPlugin extends Plugin {
                 call.reject(exception.getLocalizedMessage(), "1", exception);
             }
         } else {
-            File file = new File(fileName);
-            if (file.exists()) {
-                try {
-                    if (contentType == null || contentType.trim().equals("")) {
-                        contentType = getMimeType(fileName);
-                    }
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    Context context = getActivity().getApplicationContext();
-                    Uri path = FileProvider.getUriForFile(context, getActivity().getPackageName() + ".file.opener.provider", file);
-                    intent.setDataAndType(path, contentType);
-                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                    if (openWithDefault) {
-                        getActivity().startActivity(intent);
-                    } else {
-                        getActivity().startActivity(Intent.createChooser(intent, "Open File in..."));
-                    }
-                    call.resolve();
-                } catch (android.content.ActivityNotFoundException exception) {
-                    call.reject("Activity not found: " + exception.getMessage(), "8", exception);
-                } catch (Exception exception) {
-                    call.reject(exception.getLocalizedMessage(), "1", exception);
+            try {
+                if (contentType == null || contentType.trim().equals("")) {
+                    contentType = getMimeType(fileName);
                 }
-            } else {
-                call.reject("File not found", "9");
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Context context = getActivity().getApplicationContext();
+                Uri path = FileProvider.getUriForFile(context, getActivity().getPackageName() + ".file.opener.provider", file);
+                intent.setDataAndType(path, contentType);
+                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                if (openWithDefault) {
+                    getActivity().startActivity(intent);
+                } else {
+                    getActivity().startActivity(Intent.createChooser(intent, "Open File in..."));
+                }
+                call.resolve();
+            } catch (android.content.ActivityNotFoundException exception) {
+                call.reject("Activity not found: " + exception.getMessage(), "8", exception);
+            } catch (Exception exception) {
+                call.reject(exception.getLocalizedMessage(), "1", exception);
             }
         }
     }

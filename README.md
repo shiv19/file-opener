@@ -119,7 +119,8 @@ When an error is thrown, one of the following codes (as a string value) will be 
 | ----: | :------------------- |
 |   '1' | `INTERNAL_ERROR`     |
 |   '2' | `INVALID_ARGUMENT`   |
-| ' '8' | `FILE_NOT_SUPPORTED` |
+|   '3' | `SECURITY_ERROR`     |
+|   '8' | `FILE_NOT_SUPPORTED` |
 |   '9' | `FILE_NOT_FOUND`     |
 |  '10' | `UNKNOWN`            |
 
